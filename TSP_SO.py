@@ -13,8 +13,12 @@ def PMX(ind1, ind2):
 
 
 def inversion(ind):
-    invpoint1 = random.randint(0, len(ind) - 2)
-    invpoint2 = random.randint(invpoint1+1, len(ind)-1)
+    #invpoint1 = random.randint(0, len(ind) - 2)
+    #invpoint2 = random.randint(invpoint1+1, len(ind)-1)
+    r1 = random.randint(0, len(ind) - 1)
+    r2 = random.randint(0, len(ind) - 1)
+    
+    invpoint1 , invpoint2 = min(r1,r2), max(r1,r2)
     
     ind[invpoint1:invpoint2+1]=list(reversed(ind[invpoint1:invpoint2+1]))
     
