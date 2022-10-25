@@ -24,4 +24,30 @@ def plot_route(route, coords, orders, max_capacity=1000):
 
     ax.annotate("", xytext=coords[route[-1]], xy=coords[0], arrowprops=dict(arrowstyle="->"))
     
+def plot_route_with_labels(route, coords, orders, max_capacity=1000, figsize=(4,4)):
+    fig, ax = plt.subplots(ncols=1, figsize=figsize)
+    arrowprops = dict(arrowstyle="->",shrinkA=2, shrinkB=7.5)
+    textoptions = dict(ha="center", va="center",c="white")
+
+    ax.set(xlabel="X", ylabel="Y", xlim=(0,100), ylim=(0,100))
+    ax.grid()    
+    ax.set_axisbelow(True)
+    ax.scatter(coords[:,0], coords[:,1], marker="o", s=15**2, c=orders, cmap="inferno_r")
+    ax.scatter(coords[0,0], coords[0,1], marker="o", s=15**2, c="red")
+    # ax.plot(coords[0][0], coords[0][1], ls="", marker="o", ms=10, c="red",ec="red")
+
+    capacity = max_capacity - orders[route[0]]
+    ax.annotate("wh", xytext=coords[0], xy=coords[route[0]], arrowprops=arrowprops, **textoptions)
     
+    for i, f in zip(route, route[1:]):
+        if capacity < orders[f]:
+            capacity = max_capacity
+            ax.annotate(f"{i}", xytext=coords[i], xy=coords[0], arrowprops=arrowprops, **textoptions)
+            ax.annotate("wh", xytext=coords[0], xy=coords[f], arrowprops=arrowprops, **textoptions)
+            capacity -= orders[f]
+            # print("Ups, go back")
+        else:
+            ax.annotate(f"{i}", xytext=coords[i], xy=coords[f], arrowprops=arrowprops, **textoptions)
+            capacity -= orders[f]
+
+    ax.annotate(f"{f}", xytext=coords[route[-1]], xy=coords[0], arrowprops=arrowprops, **textoptions)
