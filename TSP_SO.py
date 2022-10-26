@@ -40,6 +40,31 @@ def evaluate(individual, distances, orders, max_capacity=1000):
     dist += distances[0, individual[-1]]
     return (dist,)
 
+def evaluateMO(individual, distances, orders, max_capacity=1000):
+    
+    dist = distances[0, individual[0]]
+    cost = max_capacity*dist
+    capacity = max_capacity - orders[individual[0]]
+    
+    for i, f in zip(individual[:-1], individual[1:]):
+        if capacity < orders[f]:
+            cost += capacity*distances[i][0]
+            dist += distances[i][0]
+            capacity = max_capacity
+            cost += capacity*distances[0][f]
+            dist += distances[0][f]
+            # print("Ups, go back")
+        else:
+            cost+=capacity*distances[i][f]
+            dist += distances[i][f]
+        
+        capacity -= orders[f]
+        # print(f"Went from {i} to {f} and capacity is now {capacity} and dist is {dist}")        
+    cost+=capacity*distances[0,individual[-1]]
+    dist+=distances[0,individual[-1]]
+    return (dist,cost)
+
+
 def init_SO_EA(ind_size, distances, orders):
     creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
     creator.create("Individual", np.ndarray, fitness=creator.FitnessMin)
