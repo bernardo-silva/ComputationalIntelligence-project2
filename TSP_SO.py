@@ -152,3 +152,9 @@ def many_runs(ind_size, distances, orders, pop_size, elitist_cross, elitist_size
         final_fitnesses += [best.fitness.values[0]]
         
     return (best_solution, best_fitness, best_evolution), (final_solutions, final_fitnesses)
+
+def heuristic_route(coords):
+    SPLIT = 50
+    order = (coords[:,0] > SPLIT) * -coords[:,1] + (coords[:,0] <= SPLIT) * (coords[:,1] -1000) 
+
+    return np.argsort(order) + 1
