@@ -102,7 +102,7 @@ class SingleObjectiveTSP:
             population = self.toolbox.population(n=self.pop_size)
         else:
             population = self.toolbox.population()
-        
+
         fitnesses = list(map(self.toolbox.evaluate, population))
         for ind, fit in zip(population, fitnesses):
             ind.fitness.values = fit
@@ -168,7 +168,7 @@ class SingleObjectiveTSP:
 
         for _ in range(n_runs):
             mins, population = self.run_SO_EA()
-            
+
             best = min(population, key=lambda x: x.fitness.values[0])
 
             if best.fitness.values[0] < result["best_fitness"]:
@@ -180,3 +180,28 @@ class SingleObjectiveTSP:
             result["final_fitnesses"] += [best.fitness.values[0]]
 
         return result
+
+
+def evaluateMO(individual, distances, orders, max_capacity=1000):
+
+    dist = distances[0, individual[0]]
+    cost = max_capacity*dist
+    capacity = max_capacity - orders[individual[0]]
+
+    for i, f in zip(individual[:-1], individual[1:]):
+        if capacity < orders[f]:
+            cost += capacity*distances[i][0]
+            dist += distances[i][0]
+            capacity = max_capacity
+            cost += capacity*distances[0][f]
+            dist += distances[0][f]
+            # print("Ups, go back")
+        else:
+            cost += capacity*distances[i][f]
+            dist += distances[i][f]
+
+        capacity -= orders[f]
+        # print(f"Went from {i} to {f} and capacity is now {capacity} and dist is {dist}")
+    cost += capacity*distances[0, individual[-1]]
+    dist += distances[0, individual[-1]]
+    return (dist, cost)
