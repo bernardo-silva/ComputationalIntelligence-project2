@@ -1,2 +1,9 @@
-Best 30 fileord: 514
-Best 30 50ord: 518
+Best 30 central fileord: 514
+Best 30 central 50ord: 518
+Best 30 corner fileord: 597 m647
+Best 30 corner 50ord: 589 m626
+
+Best 50 central fileord: 725 856
+Best 50 central 50ord:  736 839.7
+Best 50 corner fileord: 937 1062
+Best 50 corner 50ord: 909 1004
