@@ -23,19 +23,6 @@ def inversion(ind):
     ind[invpoint1:invpoint2] = ind[invpoint1:invpoint2][::-1]
     return ind
 
-def my_mute(ind,distances):
-    ind = np.array(range(1,11))
-    
-    new_ind = np.insert(ind, [0,ind.size], 0)
-    dists = np.array([1/(distances[a][b] + distances[b][c]) for a,b,c in zip(new_ind, new_ind[1:], new_ind[2:])])
-    dists /= dists.sum()
-
-    R = np.random.uniform(size=10)
-    R /= R.sum()
-
-    ind[R>dists] = np.random.permutation(ind[R>dists])
-    return ind
-
 
 class SingleObjectiveTSP:
     def __init__(self, ind_size, distances, orders, coords, pop_size,
@@ -54,21 +41,29 @@ class SingleObjectiveTSP:
         self.MUTPB = MUTPB
         self.INVPB = INVPB
 
-    def _evaluate(self, individual, distances, orders, max_capacity=1000):
+     def evaluateMO(self, individual, distances, orders, max_capacity=1000):
 
-        dist = distances[0][individual[0]]
+        dist = distances[0, individual[0]]
+        cost = max_capacity*dist
         capacity = max_capacity - orders[individual[0]]
 
         for i, f in zip(individual[:-1], individual[1:]):
-            if capacity >= orders[f]:
-                dist += distances[i][f]
-            else:
-                dist += distances[i][0] + distances[0][f]
+            if capacity < orders[f]:
+                cost += capacity*distances[i][0]
+                dist += distances[i][0]
                 capacity = max_capacity
+                cost += capacity*distances[0][f]
+                dist += distances[0][f]
+                # print("Ups, go back")
+            else:
+                cost += capacity*distances[i][f]
+                dist += distances[i][f]
 
             capacity -= orders[f]
-        dist += distances[0][individual[-1]]
-        return (dist,)
+            # print(f"Went from {i} to {f} and capacity is now {capacity} and dist is {dist}")
+        cost += capacity*distances[0, individual[-1]]
+        dist += distances[0, individual[-1]]
+    return (dist, cost)
 
     def _heuristic_route(self, split=50):
         split = 50
@@ -100,8 +95,7 @@ class SingleObjectiveTSP:
 
         toolbox.register("mate",   PMX)
         toolbox.register("select", tools.selTournament, tournsize=4)
-        toolbox.register("mutate", my_mute, distances=self.distances)
-        # toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2)
+        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2)
         toolbox.register("invert", inversion)
 
         return toolbox
@@ -192,4 +186,3 @@ class SingleObjectiveTSP:
             result["final_solutions"] += [best]
             result["final_fitnesses"] += [best.fitness.values[0]]
 
-        return result
