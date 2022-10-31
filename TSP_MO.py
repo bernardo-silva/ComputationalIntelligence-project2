@@ -120,7 +120,7 @@ class MultipleObjectiveTSP:
                     self.toolbox.invert(mutant)
                     del mutant.fitness.values
 
-            # Evaluate the individuals with an invalid fitness
+            # Evaluate the individualrun_algorithm with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
             fitnesses = list(map(self.toolbox.evaluate, invalid_ind))
 
