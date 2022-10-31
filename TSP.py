@@ -2,6 +2,24 @@ import matplotlib.pyplot as plt
 
 
 def plot_route(route, coords, orders, max_capacity=1000):
+    """
+
+    Parameters
+    ----------
+    route : TYPE
+        DESCRIPTION.
+    coords : TYPE
+        DESCRIPTION.
+    orders : TYPE
+        DESCRIPTION.
+    max_capacity : TYPE, optional
+        DESCRIPTION. The default is 1000.
+
+    Returns
+    -------
+    None.
+
+    """
     fig, ax = plt.subplots(ncols=1, figsize=(4, 4))
 
     ax.set(xlabel="X", ylabel="Y", xlim=(0, 100), ylim=(0, 100))
@@ -33,6 +51,26 @@ def plot_route(route, coords, orders, max_capacity=1000):
 
 
 def plot_route_with_labels(route, coords, orders, max_capacity=1000, figsize=(4, 4)):
+    """
+
+    Parameters
+    ----------
+    route : TYPE
+        DESCRIPTION.
+    coords : TYPE
+        DESCRIPTION.
+    orders : TYPE
+        DESCRIPTION.
+    max_capacity : TYPE, optional
+        DESCRIPTION. The default is 1000.
+    figsize : TYPE, optional
+        DESCRIPTION. The default is (4, 4).
+
+    Returns
+    -------
+    None.
+
+    """
     fig, ax = plt.subplots(ncols=1, figsize=figsize)
     arrowprops = dict(arrowstyle="->", shrinkA=2, shrinkB=7.5)
     textoptions = dict(ha="center", va="center", c="white", fontsize=10)

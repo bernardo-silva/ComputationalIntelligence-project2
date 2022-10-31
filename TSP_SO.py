@@ -4,6 +4,23 @@ import numpy as np
 
 
 def PMX(ind1, ind2):
+    """
+
+    Parameters
+    ----------
+    ind1 : TYPE
+        DESCRIPTION.
+    ind2 : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    ind1 : TYPE
+        DESCRIPTION.
+    ind2 : TYPE
+        DESCRIPTION.
+
+    """
     ind1 -= 1
     ind2 -= 1
     tools.cxPartialyMatched(ind1, ind2)
@@ -14,6 +31,19 @@ def PMX(ind1, ind2):
 
 
 def inversion(ind):
+    """
+
+    Parameters
+    ----------
+    ind : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    ind : TYPE
+        DESCRIPTION.
+
+    """
     r1 = random.randrange(len(ind)+1)
     r2 = random.randrange(len(ind)+1)
 
@@ -27,6 +57,34 @@ class SingleObjectiveTSP:
     def __init__(self, ind_size, distances, orders, coords, pop_size,
                  use_heuristic, elitist_size, CXPB,
                  INVPB):
+        """
+
+        Parameters
+        ----------
+        ind_size : TYPE
+            DESCRIPTION.
+        distances : TYPE
+            DESCRIPTION.
+        orders : TYPE
+            DESCRIPTION.
+        coords : TYPE
+            DESCRIPTION.
+        pop_size : TYPE
+            DESCRIPTION.
+        use_heuristic : TYPE
+            DESCRIPTION.
+        elitist_size : TYPE
+            DESCRIPTION.
+        CXPB : TYPE
+            DESCRIPTION.
+        INVPB : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
 
         self.ind_size = ind_size
         self.distances = distances
@@ -39,6 +97,21 @@ class SingleObjectiveTSP:
         self.INVPB = INVPB
 
     def _evaluate(self, individual, max_capacity=1000):
+        """
+
+        Parameters
+        ----------
+        individual : TYPE
+            DESCRIPTION.
+        max_capacity : TYPE, optional
+            DESCRIPTION. The default is 1000.
+
+        Returns
+        -------
+        dist : TYPE
+            DESCRIPTION.
+
+        """
 
         dist = self.distances[0][individual[0]]
         capacity = max_capacity - self.orders[individual[0]]
@@ -55,6 +128,19 @@ class SingleObjectiveTSP:
         return (dist,)
 
     def _heuristic_route(self, split=50):
+        """
+
+        Parameters
+        ----------
+        split : TYPE, optional
+            DESCRIPTION. The default is 50.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         split = 50
         order = (self.coords[:, 0] > split) * - self.coords[:, 1] + \
             (self.coords[:, 0] <= split) * (self.coords[:, 1] - 1000)
@@ -62,6 +148,14 @@ class SingleObjectiveTSP:
         return np.argsort(order) + 1
 
     def _init_SO_EA(self):
+        """
+
+        Returns
+        -------
+        toolbox : TYPE
+            DESCRIPTION.
+
+        """
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
         creator.create("Individual", np.ndarray, fitness=creator.FitnessMin)
 
@@ -88,6 +182,16 @@ class SingleObjectiveTSP:
         return toolbox
 
     def run_algorithm(self):
+        """
+
+        Returns
+        -------
+        mins : TYPE
+            DESCRIPTION.
+        population : TYPE
+            DESCRIPTION.
+
+        """
 
         if self.toolbox is None:
             self.toolbox = self._init_SO_EA()
@@ -140,6 +244,19 @@ class SingleObjectiveTSP:
         return mins, population
 
     def many_runs(self, n_runs):
+        """
+
+        Parameters
+        ----------
+        n_runs : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        result : TYPE
+            DESCRIPTION.
+
+        """
         self.toolbox = self._init_SO_EA()
 
         result = {}
