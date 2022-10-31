@@ -25,7 +25,7 @@ def inversion(ind):
 
 class SingleObjectiveTSP:
     def __init__(self, ind_size, distances, orders, coords, pop_size,
-                 use_heuristic, elitist_cross, elitist_size, CXPB,
+                 use_heuristic, elitist_size, CXPB,
                  INVPB):
 
         self.ind_size = ind_size
@@ -34,7 +34,6 @@ class SingleObjectiveTSP:
         self.coords = coords
         self.pop_size = pop_size
         self.use_heuristic = use_heuristic
-        self.elitist_cross = elitist_cross
         self.elitist_size = elitist_size
         self.CXPB = CXPB
         self.INVPB = INVPB
@@ -84,13 +83,11 @@ class SingleObjectiveTSP:
 
         toolbox.register("mate",   PMX)
         toolbox.register("select", tools.selTournament, tournsize=4)
-        # toolbox.register("mutate", my_mute, distances=self.distances)
-        # toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2)
         toolbox.register("invert", inversion)
 
         return toolbox
 
-    def run_SO_EA(self):
+    def run_algorithm(self):
 
         if self.toolbox is None:
             self.toolbox = self._init_SO_EA()
@@ -106,18 +103,14 @@ class SingleObjectiveTSP:
 
         # Generations
         g = 0
-        # means = []
         mins = []
-        # maxs = []
 
         while g < 10_000 // self.pop_size:
             g += 1
-            # print(f"----- Generation {g} -----")
             population.sort(key=lambda x: x.fitness.values[0])
 
-            offspring = self.toolbox.select(
-                population[:self.elitist_cross*self.elitist_size],
-                len(population)-self.elitist_size)
+            offspring = self.toolbox.select(population,
+                                            len(population)-self.elitist_size)
             offspring = list(map(self.toolbox.clone, offspring))
 
             # Apply crossover and mutation on the offspring
@@ -126,11 +119,6 @@ class SingleObjectiveTSP:
                     self.toolbox.mate(child1, child2)
                     del child1.fitness.values
                     del child2.fitness.values
-
-            # for mutant in offspring:
-            #     if random.random() < self.MUTPB:
-            #         self.toolbox.mutate(mutant)
-            #         del mutant.fitness.values
 
             for mutant in offspring:
                 if random.random() < self.INVPB:
@@ -148,11 +136,7 @@ class SingleObjectiveTSP:
             # Gather all the fitnesses in one list and print the stats
             fits = [ind.fitness.values[0] for ind in population]
 
-            # mean = np.mean(fits)
-            # std = np.std(fits)
-            # means.append(mean)
             mins.append(min(fits))
-            # maxs.append(max(fits))
         return mins, population
 
     def many_runs(self, n_runs):
@@ -164,7 +148,7 @@ class SingleObjectiveTSP:
         result["final_fitnesses"] = []
 
         for _ in range(n_runs):
-            mins, population = self.run_SO_EA()
+            mins, population = self.run_algorithm()
 
             best = min(population, key=lambda x: x.fitness.values[0])
 
