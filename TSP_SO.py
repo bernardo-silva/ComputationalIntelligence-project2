@@ -1,7 +1,6 @@
 import random
 from deap import tools, base, creator
 import numpy as np
-from time import perf_counter
 
 
 def PMX(ind1, ind2):
@@ -23,23 +22,10 @@ def inversion(ind):
     ind[invpoint1:invpoint2] = ind[invpoint1:invpoint2][::-1]
     return ind
 
-def my_mute(ind,distances):
-    ind = np.array(range(1,11))
-    
-    new_ind = np.insert(ind, [0,ind.size], 0)
-    dists = np.array([1/(distances[a][b] + distances[b][c]) for a,b,c in zip(new_ind, new_ind[1:], new_ind[2:])])
-    dists /= dists.sum()
-
-    R = np.random.uniform(size=10)
-    R /= R.sum()
-
-    ind[R>dists] = np.random.permutation(ind[R>dists])
-    return ind
-
 
 class SingleObjectiveTSP:
     def __init__(self, ind_size, distances, orders, coords, pop_size,
-                 use_heuristic, elitist_cross, elitist_size, CXPB, MUTPB,
+                 use_heuristic, elitist_cross, elitist_size, CXPB,
                  INVPB):
 
         self.ind_size = ind_size
@@ -51,23 +37,22 @@ class SingleObjectiveTSP:
         self.elitist_cross = elitist_cross
         self.elitist_size = elitist_size
         self.CXPB = CXPB
-        self.MUTPB = MUTPB
         self.INVPB = INVPB
 
-    def _evaluate(self, individual, distances, orders, max_capacity=1000):
+    def _evaluate(self, individual, max_capacity=1000):
 
-        dist = distances[0][individual[0]]
-        capacity = max_capacity - orders[individual[0]]
+        dist = self.distances[0][individual[0]]
+        capacity = max_capacity - self.orders[individual[0]]
 
         for i, f in zip(individual[:-1], individual[1:]):
-            if capacity >= orders[f]:
-                dist += distances[i][f]
+            if capacity >= self.orders[f]:
+                dist += self.distances[i][f]
             else:
-                dist += distances[i][0] + distances[0][f]
+                dist += self.distances[i][0] + self.distances[0][f]
                 capacity = max_capacity
 
-            capacity -= orders[f]
-        dist += distances[0][individual[-1]]
+            capacity -= self.orders[f]
+        dist += self.distances[0][individual[-1]]
         return (dist,)
 
     def _heuristic_route(self, split=50):
@@ -95,12 +80,11 @@ class SingleObjectiveTSP:
             toolbox.register("population", tools.initRepeat,
                              list, toolbox.individual)
 
-        toolbox.register("evaluate", self._evaluate, distances=self.distances,
-                         orders=self.orders)
+        toolbox.register("evaluate", self._evaluate)
 
         toolbox.register("mate",   PMX)
         toolbox.register("select", tools.selTournament, tournsize=4)
-        toolbox.register("mutate", my_mute, distances=self.distances)
+        # toolbox.register("mutate", my_mute, distances=self.distances)
         # toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2)
         toolbox.register("invert", inversion)
 
@@ -143,10 +127,10 @@ class SingleObjectiveTSP:
                     del child1.fitness.values
                     del child2.fitness.values
 
-            for mutant in offspring:
-                if random.random() < self.MUTPB:
-                    self.toolbox.mutate(mutant)
-                    del mutant.fitness.values
+            # for mutant in offspring:
+            #     if random.random() < self.MUTPB:
+            #         self.toolbox.mutate(mutant)
+            #         del mutant.fitness.values
 
             for mutant in offspring:
                 if random.random() < self.INVPB:

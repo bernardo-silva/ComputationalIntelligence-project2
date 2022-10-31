@@ -35,13 +35,13 @@ def plot_route(route, coords, orders, max_capacity=1000):
 def plot_route_with_labels(route, coords, orders, max_capacity=1000, figsize=(4, 4)):
     fig, ax = plt.subplots(ncols=1, figsize=figsize)
     arrowprops = dict(arrowstyle="->", shrinkA=2, shrinkB=7.5)
-    textoptions = dict(ha="center", va="center", c="white", fontsize=6)
+    textoptions = dict(ha="center", va="center", c="white", fontsize=10)
 
     ax.set(xlabel="X", ylabel="Y", xlim=(0, 100), ylim=(0, 100))
     ax.grid()
     ax.set_axisbelow(True)
     ax.scatter(coords[:, 0], coords[:, 1], marker="o",
-               s=10**2, c=orders, cmap="inferno_r")
+               s=15**2, c=orders, cmap="Blues")
     ax.scatter(coords[0, 0], coords[0, 1], marker="o", s=15**2, c="red")
     # ax.plot(coords[0][0], coords[0][1], ls="", marker="o", ms=10, c="red",ec="red")
 

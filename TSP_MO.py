@@ -1,7 +1,7 @@
 import random
 from deap import tools, base, creator
+from deap.benchmarks.tools import hypervolume
 import numpy as np
-from time import perf_counter
 
 
 def PMX(ind1, ind2):
@@ -24,56 +24,43 @@ def inversion(ind):
     return ind
 
 
-class SingleObjectiveTSP:
-    def __init__(self, ind_size, distances, orders, coords, pop_size,
-                 use_heuristic, elitist_cross, elitist_size, CXPB, MUTPB,
-                 INVPB):
+class MultipleObjectiveTSP:
+    def __init__(self, ind_size, distances, orders, coords, pop_size, CXPB, INVPB):
 
         self.ind_size = ind_size
         self.distances = distances
         self.orders = orders
         self.coords = coords
         self.pop_size = pop_size
-        self.use_heuristic = use_heuristic
-        self.elitist_cross = elitist_cross
-        self.elitist_size = elitist_size
+        self.toolbox = None
         self.CXPB = CXPB
-        self.MUTPB = MUTPB
         self.INVPB = INVPB
 
-     def evaluateMO(self, individual, distances, orders, max_capacity=1000):
+    def _evaluate(self, individual, max_capacity=1000):
 
-        dist = distances[0, individual[0]]
+        dist = self.distances[0][individual[0]]
         cost = max_capacity*dist
-        capacity = max_capacity - orders[individual[0]]
+        capacity = max_capacity - self.orders[individual[0]]
 
         for i, f in zip(individual[:-1], individual[1:]):
-            if capacity < orders[f]:
-                cost += capacity*distances[i][0]
-                dist += distances[i][0]
-                capacity = max_capacity
-                cost += capacity*distances[0][f]
-                dist += distances[0][f]
-                # print("Ups, go back")
+            if capacity >= self.orders[f]:
+                cost += capacity*self.distances[i][f]
+                dist += self.distances[i][f]
             else:
-                cost += capacity*distances[i][f]
-                dist += distances[i][f]
+                dist += self.distances[i][0] + self.distances[0][f]
+                cost += capacity * self.distances[i][0]
+                capacity = max_capacity
+                cost += capacity * self.distances[0][f]
 
-            capacity -= orders[f]
-            # print(f"Went from {i} to {f} and capacity is now {capacity} and dist is {dist}")
-        cost += capacity*distances[0, individual[-1]]
-        dist += distances[0, individual[-1]]
-    return (dist, cost)
+            capacity -= self.orders[f]
 
-    def _heuristic_route(self, split=50):
-        split = 50
-        order = (self.coords[:, 0] > split) * - self.coords[:, 1] + \
-            (self.coords[:, 0] <= split) * (self.coords[:, 1] - 1000)
+        cost += capacity * self.distances[0][individual[-1]]
+        dist += self.distances[0][individual[-1]]
 
-        return np.argsort(order) + 1
+        return (dist, cost/1000)
 
-    def _init_SO_EA(self):
-        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+    def _init_MO_EA(self):
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0, -1.0))
         creator.create("Individual", np.ndarray, fitness=creator.FitnessMin)
 
         toolbox = base.Toolbox()
@@ -81,34 +68,27 @@ class SingleObjectiveTSP:
                          self.ind_size)
         toolbox.register("individual", tools.initIterate, creator.Individual,
                          toolbox.indices)
-        if self.use_heuristic:
-            init_funcs = [lambda: creator.Individual(self._heuristic_route())] + \
-                [toolbox.individual]*(self.pop_size-1)
-            toolbox.register("population", tools.initCycle,
-                             list, init_funcs, n=1)
-        else:
-            toolbox.register("population", tools.initRepeat,
-                             list, toolbox.individual)
 
-        toolbox.register("evaluate", self._evaluate, distances=self.distances,
-                         orders=self.orders)
+        toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+        toolbox.register("evaluate", self._evaluate)
 
         toolbox.register("mate",   PMX)
-        toolbox.register("select", tools.selTournament, tournsize=4)
-        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2)
+        toolbox.register("select", tools.selNSGA2)
+        # toolbox.register("mutate", my_mute, distances=self.distances)
+        # toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2)
         toolbox.register("invert", inversion)
 
         return toolbox
 
-    def run_SO_EA(self):
+    def run_algorithm(self):
 
         if self.toolbox is None:
-            self.toolbox = self._init_SO_EA()
+            self.toolbox = self._init_MO_EA()
 
-        if not self.use_heuristic:
-            population = self.toolbox.population(n=self.pop_size)
-        else:
-            population = self.toolbox.population()
+        population = self.toolbox.population(n=self.pop_size)
+
+        population = self.toolbox.select(population, self.pop_size)
 
         fitnesses = list(map(self.toolbox.evaluate, population))
         for ind, fit in zip(population, fitnesses):
@@ -116,18 +96,16 @@ class SingleObjectiveTSP:
 
         # Generations
         g = 0
-        # means = []
-        mins = []
-        # maxs = []
+
+        # mins = []
+        listfits = []
+        hypervolumes = []
 
         while g < 10_000 // self.pop_size:
             g += 1
             # print(f"----- Generation {g} -----")
-            population.sort(key=lambda x: x.fitness.values[0])
 
-            offspring = self.toolbox.select(
-                population[:self.elitist_cross*self.elitist_size],
-                len(population)-self.elitist_size)
+            offspring = tools.selTournamentDCD(population, len(population))
             offspring = list(map(self.toolbox.clone, offspring))
 
             # Apply crossover and mutation on the offspring
@@ -136,11 +114,6 @@ class SingleObjectiveTSP:
                     self.toolbox.mate(child1, child2)
                     del child1.fitness.values
                     del child2.fitness.values
-
-            for mutant in offspring:
-                if random.random() < self.MUTPB:
-                    self.toolbox.mutate(mutant)
-                    del mutant.fitness.values
 
             for mutant in offspring:
                 if random.random() < self.INVPB:
@@ -154,35 +127,34 @@ class SingleObjectiveTSP:
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
 
-            population[self.elitist_size:] = offspring
+            population = self.toolbox.select(population + offspring,
+                                             len(population))
             # Gather all the fitnesses in one list and print the stats
-            fits = [ind.fitness.values[0] for ind in population]
 
-            # mean = np.mean(fits)
-            # std = np.std(fits)
-            # means.append(mean)
-            mins.append(min(fits))
-            # maxs.append(max(fits))
-        return mins, population
+            fits = [ind.fitness.values[0] for ind in population]
+            listfits += [fits]
+            hypervolumes += [hypervolume(population, [2000, 2000])]
+
+        return hypervolumes, population
 
     def many_runs(self, n_runs):
-        self.toolbox = self._init_SO_EA()
+        if self.toolbox is None:
+            self.toolbox = self._init_MO_EA()
 
         result = {}
-        result["best_fitness"] = 1e6
+        result["best_hv"] = -1
         result["final_solutions"] = []
         result["final_fitnesses"] = []
 
         for _ in range(n_runs):
-            mins, population = self.run_SO_EA()
+            hypervolumes, population = self.run_algorithm()
 
-            best = min(population, key=lambda x: x.fitness.values[0])
+            if hypervolumes[-1] > result["best_hv"]:
+                result["best_solution"] = population
+                result["best_hv"] = hypervolumes[-1]
+                result["best_evolution"] = hypervolumes
 
-            if best.fitness.values[0] < result["best_fitness"]:
-                result["best_solution"] = best
-                result["best_fitness"] = best.fitness.values[0]
-                result["best_evolution"] = mins
+            result["final_solutions"] += [population]
+            result["final_fitnesses"] += [hypervolumes[-1]]
 
-            result["final_solutions"] += [best]
-            result["final_fitnesses"] += [best.fitness.values[0]]
-
+        return result
