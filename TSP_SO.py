@@ -13,13 +13,13 @@ class SingleObjectiveTSP:
         Parameters
         ----------
         ind_size : int
-            Size of individuals. Corresponds the the number of cities
+            Size of individuals. Corresponds the the number of costumers
         distances : list of lists or 2D array
-            Distances between each pair of cities.
+            Distances between each pair of costumers.
         orders : list
-            amount of orders for each city.
+            amount of orders for each costumer.
         coords : list of lists or 2D array.
-            coordinates of each city
+            coordinates of each costumer
         pop_size : int
             population size to consider in the evolutionary algorithm.
         use_heuristic : bool
@@ -47,14 +47,14 @@ class SingleObjectiveTSP:
         self.CXPB = CXPB
         self.INVPB = INVPB
 
-    def _evaluate(self, individual, max_capacity=1000):
+    def _evaluate(self, individual, max_capacostumer=1000):
         """Computes the distance traveled in a route
 
         Parameters
         ----------
         individual : Individual
-        max_capacity : int, optional
-            Maximum truck capacity. The default is 1000.
+        max_capacostumer : int, optional
+            Maximum truck capacostumer. The default is 1000.
 
         Returns
         -------
@@ -64,16 +64,16 @@ class SingleObjectiveTSP:
         """
 
         dist = self.distances[0][individual[0]]
-        capacity = max_capacity - self.orders[individual[0]]
+        capacostumer = max_capacostumer - self.orders[individual[0]]
 
         for i, f in zip(individual[:-1], individual[1:]):
-            if capacity >= self.orders[f]:
+            if capacostumer >= self.orders[f]:
                 dist += self.distances[i][f]
             else:
                 dist += self.distances[i][0] + self.distances[0][f]
-                capacity = max_capacity
+                capacostumer = max_capacostumer
 
-            capacity -= self.orders[f]
+            capacostumer -= self.orders[f]
         dist += self.distances[0][individual[-1]]
         return (dist,)
 
