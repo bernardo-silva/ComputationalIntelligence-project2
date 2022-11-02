@@ -1,79 +1,30 @@
 import random
 from deap import tools, base, creator
 from deap.benchmarks.tools import hypervolume
+from TSP import PMX, inversion
 import numpy as np
-
-
-def PMX(ind1, ind2):
-    """
-
-    Parameters
-    ----------
-    ind1 : TYPE
-        DESCRIPTION.
-    ind2 : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    ind1 : TYPE
-        DESCRIPTION.
-    ind2 : TYPE
-        DESCRIPTION.
-
-    """
-    ind1 -= 1
-    ind2 -= 1
-    tools.cxPartialyMatched(ind1, ind2)
-    ind1 += 1
-    ind2 += 1
-
-    return (ind1, ind2)
-
-
-def inversion(ind):
-    """
-
-    Parameters
-    ----------
-    ind : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    ind : TYPE
-        DESCRIPTION.
-
-    """
-    r1 = random.randrange(len(ind)+1)
-    r2 = random.randrange(len(ind)+1)
-
-    invpoint1, invpoint2 = min(r1, r2), max(r1, r2)
-
-    ind[invpoint1:invpoint2] = ind[invpoint1:invpoint2][::-1]
-    return ind
 
 
 class MultipleObjectiveTSP:
     def __init__(self, ind_size, distances, orders, coords, pop_size, CXPB, INVPB):
-        """
+        """Creates Multi Objective TSP instance
 
         Parameters
         ----------
-        ind_size : TYPE
-            DESCRIPTION.
-        distances : TYPE
-            DESCRIPTION.
-        orders : TYPE
-            DESCRIPTION.
-        coords : TYPE
-            DESCRIPTION.
-        pop_size : TYPE
-            DESCRIPTION.
-        CXPB : TYPE
-            DESCRIPTION.
-        INVPB : TYPE
-            DESCRIPTION.
+        ind_size : int
+            Size of individuals. Corresponds the the number of cities
+        distances : list of lists or 2D array
+            Distances between each pair of cities.
+        orders : list
+            amount of orders for each city.
+        coords : list of lists or 2D array.
+            coordinates of each city
+        pop_size : int
+            population size to consider in the evolutionary algorithm.
+        CXPB : float
+            probability of crossover happening to a pair of individuals.
+        INVPB : float
+            probability of inversion happening to an individual.
 
         Returns
         -------
@@ -91,21 +42,20 @@ class MultipleObjectiveTSP:
         self.INVPB = INVPB
 
     def _evaluate(self, individual, max_capacity=1000):
-        """
+        """Computes the distance traveled and the cost in a route
 
         Parameters
         ----------
-        individual : TYPE
-            DESCRIPTION.
-        max_capacity : TYPE, optional
-            DESCRIPTION. The default is 1000.
+        individual : Individual
+        max_capacity : int, optional
+            Maximum truck capacity. The default is 1000.
 
         Returns
         -------
-        dist : TYPE
-            DESCRIPTION.
-        TYPE
-            DESCRIPTION.
+        dist : float
+            total distance.
+        cost : float
+            total cost.
 
         """
 
@@ -131,14 +81,6 @@ class MultipleObjectiveTSP:
         return (dist, cost/1000)
 
     def _init_MO_EA(self):
-        """
-
-        Returns
-        -------
-        toolbox : TYPE
-            DESCRIPTION.
-
-        """
         creator.create("FitnessMin", base.Fitness, weights=(-1.0, -1.0))
         creator.create("Individual", np.ndarray, fitness=creator.FitnessMin)
 
@@ -161,14 +103,14 @@ class MultipleObjectiveTSP:
         return toolbox
 
     def run_algorithm(self):
-        """
+        """Runs evolutionary algorithm
 
         Returns
         -------
-        hypervolumes : TYPE
-            DESCRIPTION.
-        population : TYPE
-            DESCRIPTION.
+        hypervolumes : list of float
+            Hypervolumes at each generation.
+        population : list of Individual
+            Final population.
 
         """
 
@@ -192,7 +134,6 @@ class MultipleObjectiveTSP:
 
         while g < 10_000 // self.pop_size:
             g += 1
-            # print(f"----- Generation {g} -----")
 
             offspring = tools.selTournamentDCD(population, len(population))
             offspring = list(map(self.toolbox.clone, offspring))
@@ -231,13 +172,13 @@ class MultipleObjectiveTSP:
 
         Parameters
         ----------
-        n_runs : TYPE
-            DESCRIPTION.
+        n_runs : int
+            number of times to run the algorithm.
 
         Returns
         -------
-        result : TYPE
-            DESCRIPTION.
+        result : dict
+            Dictionary with useful information about the run algorithms.
 
         """
         if self.toolbox is None:

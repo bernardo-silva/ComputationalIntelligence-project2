@@ -1,4 +1,50 @@
 import matplotlib.pyplot as plt
+from deap import tools
+import random
+
+
+def PMX(ind1, ind2):
+    """Partially Mapped Crossover
+    Takes into account that the cities are numbered from 1 to N
+
+    Parameters
+    ----------
+    ind1, ind2 : Individual
+        Parents
+
+    Returns
+    -------
+    ind1, ind2 : Individual
+        Offsprings.
+    """
+    ind1 -= 1
+    ind2 -= 1
+    tools.cxPartialyMatched(ind1, ind2)
+    ind1 += 1
+    ind2 += 1
+
+    return (ind1, ind2)
+
+
+def inversion(ind):
+    """Inversion mutation
+
+    Parameters
+    ----------
+    ind : Individual
+
+    Returns
+    -------
+    ind : Individual
+    """
+    r1 = random.randrange(len(ind)+1)
+    r2 = random.randrange(len(ind)+1)
+
+    invpoint1, invpoint2 = min(r1, r2), max(r1, r2)
+
+    ind[invpoint1:invpoint2] = ind[invpoint1:invpoint2][::-1]
+    return ind
+
 
 
 def plot_route(route, coords, orders, max_capacity=1000):
