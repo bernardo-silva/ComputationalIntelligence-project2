@@ -9,14 +9,14 @@ The used algorithms are implemented in their own classes, `SingleObjectiveTSP`
 and `MultipleObjectiveTSP`, which can be found in the `TSP_SO.py` and
 `TSP_MO.py`, respectively.
 
-When creating a class each class instance, the parameters to use for the
+When creating a class instance, the parameters to use for the
 algorithm can be set, namely:
 
 - `ind_size`: the size of the individuals, corresponding to the number of
-  cities
-- `distances`: a 2D list of the distances between each city
-- `orders`: a list of size `ind_size + 1` with the orders for each city 
-- `coords`: a 2D list of tuples with each city's coordinates
+  costumers
+- `distances`: a 2D list of the distances between each costumer
+- `orders`: a list of size `ind_size + 1` with the orders for each costumer 
+- `coords`: a 2D list of tuples with each costumer's coordinates
 - `pop_size`: the number of individuals to use for the evolutionary
   algorithm
 - `CXPB`: the probability of applying crossover to the offsprings

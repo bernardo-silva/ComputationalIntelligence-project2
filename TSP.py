@@ -5,7 +5,7 @@ import random
 
 def PMX(ind1, ind2):
     """Partially Mapped Crossover
-    Takes into account that the cities are numbered from 1 to N
+    Takes into account that the customers are numbered from 1 to N
 
     Parameters
     ----------

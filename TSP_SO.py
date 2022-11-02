@@ -47,14 +47,14 @@ class SingleObjectiveTSP:
         self.CXPB = CXPB
         self.INVPB = INVPB
 
-    def _evaluate(self, individual, max_capacostumer=1000):
+    def _evaluate(self, individual, max_capacity=1000):
         """Computes the distance traveled in a route
 
         Parameters
         ----------
         individual : Individual
-        max_capacostumer : int, optional
-            Maximum truck capacostumer. The default is 1000.
+        max_capacity : int, optional
+            Maximum truck capacity. The default is 1000.
 
         Returns
         -------
@@ -64,21 +64,21 @@ class SingleObjectiveTSP:
         """
 
         dist = self.distances[0][individual[0]]
-        capacostumer = max_capacostumer - self.orders[individual[0]]
+        capacity = max_capacity - self.orders[individual[0]]
 
         for i, f in zip(individual[:-1], individual[1:]):
-            if capacostumer >= self.orders[f]:
+            if capacity >= self.orders[f]:
                 dist += self.distances[i][f]
             else:
                 dist += self.distances[i][0] + self.distances[0][f]
-                capacostumer = max_capacostumer
+                capacity = max_capacity
 
-            capacostumer -= self.orders[f]
+            capacity -= self.orders[f]
         dist += self.distances[0][individual[-1]]
         return (dist,)
 
     def _heuristic_route(self, split=50):
-        """ Generates a good candidate solutino
+        """ Generates a good candidate solution
 
         Parameters
         ----------
