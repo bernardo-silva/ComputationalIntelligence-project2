@@ -1,25 +1,52 @@
 import matplotlib.pyplot as plt
+from deap import tools
+import random
 
 
-def plot_route(route, coords, orders, max_capacity=1000):
-    """
+def PMX(ind1, ind2):
+    """Partially Mapped Crossover
+    Takes into account that the cities are numbered from 1 to N
 
     Parameters
     ----------
-    route : TYPE
-        DESCRIPTION.
-    coords : TYPE
-        DESCRIPTION.
-    orders : TYPE
-        DESCRIPTION.
-    max_capacity : TYPE, optional
-        DESCRIPTION. The default is 1000.
+    ind1, ind2 : Individual
+        Parents
 
     Returns
     -------
-    None.
-
+    ind1, ind2 : Individual
+        Offsprings.
     """
+    ind1 -= 1
+    ind2 -= 1
+    tools.cxPartialyMatched(ind1, ind2)
+    ind1 += 1
+    ind2 += 1
+
+    return (ind1, ind2)
+
+
+def inversion(ind):
+    """Inversion mutation
+
+    Parameters
+    ----------
+    ind : Individual
+
+    Returns
+    -------
+    ind : Individual
+    """
+    r1 = random.randrange(len(ind)+1)
+    r2 = random.randrange(len(ind)+1)
+
+    invpoint1, invpoint2 = min(r1, r2), max(r1, r2)
+
+    ind[invpoint1:invpoint2] = ind[invpoint1:invpoint2][::-1]
+    return ind
+
+
+def plot_route(route, coords, orders, max_capacity=1000):
     fig, ax = plt.subplots(ncols=1, figsize=(4, 4))
 
     ax.set(xlabel="X", ylabel="Y", xlim=(0, 100), ylim=(0, 100))
@@ -51,26 +78,6 @@ def plot_route(route, coords, orders, max_capacity=1000):
 
 
 def plot_route_with_labels(route, coords, orders, max_capacity=1000, figsize=(4, 4)):
-    """
-
-    Parameters
-    ----------
-    route : TYPE
-        DESCRIPTION.
-    coords : TYPE
-        DESCRIPTION.
-    orders : TYPE
-        DESCRIPTION.
-    max_capacity : TYPE, optional
-        DESCRIPTION. The default is 1000.
-    figsize : TYPE, optional
-        DESCRIPTION. The default is (4, 4).
-
-    Returns
-    -------
-    None.
-
-    """
     fig, ax = plt.subplots(ncols=1, figsize=figsize)
     arrowprops = dict(arrowstyle="->", shrinkA=2, shrinkB=7.5)
     textoptions = dict(ha="center", va="center", c="white", fontsize=10)
